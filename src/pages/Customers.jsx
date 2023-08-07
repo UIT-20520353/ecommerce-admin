@@ -25,14 +25,18 @@ function Customers() {
 
   function sortCustomers(property, type) {
     const temp = [...customers];
-    if (type === 'asc') temp.sort((a, b) => (a[property] > b[property] ? 1 : b[property] > a[property] ? -1 : 0));
-    else temp.sort((a, b) => (a[property] < b[property] ? 1 : b[property] < a[property] ? -1 : 0));
+    const ascSort = temp.sort((a, b) => (a[property] > b[property] ? 1 : b[property] > a[property] ? -1 : 0));
+    const descSort = temp.sort((a, b) => (a[property] < b[property] ? 1 : b[property] < a[property] ? -1 : 0));
+    const sort = type === 'asc' ? ascSort : descSort;
+
+    // if (type === 'asc') temp.sort((a, b) => (a[property] > b[property] ? 1 : b[property] > a[property] ? -1 : 0));
+    // else temp.sort((a, b) => (a[property] < b[property] ? 1 : b[property] < a[property] ? -1 : 0));
 
     setIsSort({
       property,
       type
     });
-    setCustomers(temp);
+    setCustomers(sort);
   }
 
   return (

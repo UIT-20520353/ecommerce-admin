@@ -9,7 +9,7 @@ function Stores() {
   const isCollapsed = useSelector((state) => state.sidebar.isCollapsed);
   const [currentPage, setCurrentPage] = useState(1);
   const [stores, setStores] = useState([...data]);
-  const [isSort, setIsSort] = useState({ property: '', type: '' });
+  const [headerSort, setHeaderSort] = useState({ property: '', type: '' });
 
   const pages = useMemo(() => {
     return Math.ceil(stores.length / itemsPerPage);
@@ -28,7 +28,7 @@ function Stores() {
     if (type === 'asc') temp.sort((a, b) => (a[property] > b[property] ? 1 : b[property] > a[property] ? -1 : 0));
     else temp.sort((a, b) => (a[property] < b[property] ? 1 : b[property] < a[property] ? -1 : 0));
 
-    setIsSort({
+    setHeaderSort({
       property,
       type
     });
@@ -77,16 +77,16 @@ function Stores() {
                 scope='col'
                 className='w-32 px-4 py-3 cursor-pointer'
                 onClick={() => {
-                  if (isSort.property === 'id' && isSort.type === 'desc') sortStores('id', 'asc');
+                  if (headerSort.property === 'id' && headerSort.type === 'desc') sortStores('id', 'asc');
                   else sortStores('id', 'desc');
                 }}
               >
                 <div className='flex flex-row items-center gap-x-1'>
                   Store
-                  {isSort.property !== 'id' ? (
+                  {headerSort.property !== 'id' ? (
                     <FaSort className='w-3 h-3 text-gray-400' />
                   ) : (
-                    <SortIcon type={isSort.type} />
+                    <SortIcon type={headerSort.type} />
                   )}
                 </div>
               </th>
@@ -97,16 +97,16 @@ function Stores() {
                 scope='col'
                 className='px-4 py-3 cursor-pointer'
                 onClick={() => {
-                  if (isSort.property === 'name' && isSort.type === 'desc') sortStores('name', 'asc');
+                  if (headerSort.property === 'name' && headerSort.type === 'desc') sortStores('name', 'asc');
                   else sortStores('name', 'desc');
                 }}
               >
                 <div className='flex flex-row items-center gap-x-1'>
                   Name
-                  {isSort.property !== 'name' ? (
+                  {headerSort.property !== 'name' ? (
                     <FaSort className='w-3 h-3 text-gray-400' />
                   ) : (
-                    <SortIcon type={isSort.type} />
+                    <SortIcon type={headerSort.type} />
                   )}
                 </div>
               </th>
@@ -120,16 +120,17 @@ function Stores() {
                 scope='col'
                 className='w-32 px-4 py-3 cursor-pointer'
                 onClick={() => {
-                  if (isSort.property === 'totalProducts' && isSort.type === 'desc') sortStores('totalProducts', 'asc');
+                  if (headerSort.property === 'totalProducts' && headerSort.type === 'desc')
+                    sortStores('totalProducts', 'asc');
                   else sortStores('totalProducts', 'desc');
                 }}
               >
                 <div className='flex flex-row items-center gap-x-1'>
                   Total Products
-                  {isSort.property !== 'totalProducts' ? (
+                  {headerSort.property !== 'totalProducts' ? (
                     <FaSort className='w-3 h-3 text-gray-400' />
                   ) : (
-                    <SortIcon type={isSort.type} />
+                    <SortIcon type={headerSort.type} />
                   )}
                 </div>
               </th>
@@ -137,16 +138,16 @@ function Stores() {
                 scope='col'
                 className='w-40 px-4 py-3 cursor-pointer'
                 onClick={() => {
-                  if (isSort.property === 'status' && isSort.type === 'desc') sortStores('status', 'asc');
+                  if (headerSort.property === 'status' && headerSort.type === 'desc') sortStores('status', 'asc');
                   else sortStores('status', 'desc');
                 }}
               >
                 <div className='flex flex-row items-center gap-x-1'>
                   Status
-                  {isSort.property !== 'status' ? (
+                  {headerSort.property !== 'status' ? (
                     <FaSort className='w-3 h-3 text-gray-400' />
                   ) : (
-                    <SortIcon type={isSort.type} />
+                    <SortIcon type={headerSort.type} />
                   )}
                 </div>
               </th>

@@ -6,8 +6,15 @@ SortIcon.propTypes = {
 };
 
 function SortIcon({ type }) {
-  if (type === 'asc') return <FaSortUp className='w-3 h-3 text-gray-400' />;
-  else return <FaSortDown className='w-3 h-3 text-gray-400' />;
+  return (
+    <>
+      {type === 'asc' ? (
+        <FaSortUp className='w-3 h-3 text-gray-400' />
+      ) : (
+        <FaSortDown className='w-3 h-3 text-gray-400' />
+      )}
+    </>
+  );
 }
 
 export { SortIcon };

@@ -1,45 +1,107 @@
 import { CgPushLeft } from 'react-icons/cg';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { LuStore } from 'react-icons/lu';
-import { AiOutlineUser } from 'react-icons/ai';
+import { AiOutlineUser, AiOutlineLogout } from 'react-icons/ai';
 import { useSelector, useDispatch } from 'react-redux';
 import { collapse, expand } from '../app/toggleSidebarSlice';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import jwtDecode from 'jwt-decode';
+import { useLocalStorage } from '../utils/utils';
+import { keyStorage } from '../constraint/constraint';
+import { useMemo } from 'react';
+import { logout } from '../api/http';
 
-function Sidebar() {
+const Sidebar = () => {
   const isCollapsed = useSelector((state) => state.sidebar.isCollapsed);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [user, setUser] = useLocalStorage(keyStorage, null);
+
+  const role = useMemo(() => {
+    const temp = jwtDecode(user?.accessToken);
+    return temp?.authorities[0];
+  }, [user?.accessToken]);
+
+  const handleSignOut = async () => {
+    await logout(user?.accessToken);
+    setUser(null);
+    navigate('/login', { replace: true });
+  };
 
   return (
     <aside
       className={`fixed border-gray-200 left-0 bg-white border-r top-16 duration-200 ${isCollapsed ? 'w-16' : 'w-64'}`}
     >
       <ul className='flex flex-col items-start px-4 mt-4 gap-y-3 h-sidebar custom-scroll'>
+        {role === 'ADMIN' ? (
+          <>
+            <li className='w-full'>
+              <NavLink
+                to={'/'}
+                className={({ isActive }) =>
+                  `flex flex-row w-full py-3 duration-200 rounded-lg items-enter gap-x-4 hover:bg-gray-200 ${
+                    isCollapsed ? 'justify-center px-2 w-9 h-9' : 'px-4'
+                  } ${isActive ? 'text-blue-500' : 'text-gray-600'}`
+                }
+              >
+                <LuStore className={`${isCollapsed ? 'w-4 h-4' : 'w-5 h-5'}`} />
+                <p className={`text-sm opacity-100 ${isCollapsed && 'hidden opacity-0'}`}>Store management</p>
+              </NavLink>
+            </li>
+            <li className='w-full'>
+              <NavLink
+                to={'/customers'}
+                className={({ isActive }) =>
+                  `flex flex-row w-full py-3 duration-200 rounded-lg items-enter gap-x-4 hover:bg-gray-200 ${
+                    isCollapsed ? 'justify-center px-2 w-9 h-9' : 'px-4'
+                  } ${isActive ? 'text-blue-500' : 'text-gray-600'}`
+                }
+              >
+                <AiOutlineUser className={`${isCollapsed ? 'w-4 h-4' : 'w-5 h-5'}`} />
+                <p className={`text-sm opacity-100 ${isCollapsed && 'hidden opacity-0'}`}>Customer management</p>
+              </NavLink>
+            </li>
+          </>
+        ) : (
+          <>
+            <li className='w-full'>
+              <NavLink
+                to={'/sasd'}
+                className={({ isActive }) =>
+                  `flex flex-row w-full py-3 duration-200 rounded-lg items-enter gap-x-4 hover:bg-gray-200 ${
+                    isCollapsed ? 'justify-center px-2 w-9 h-9' : 'px-4'
+                  } ${isActive ? 'text-blue-500' : 'text-gray-600'}`
+                }
+              >
+                <AiOutlineUser className={`${isCollapsed ? 'w-4 h-4' : 'w-5 h-5'}`} />
+                <p className={`text-sm opacity-100 ${isCollapsed && 'hidden opacity-0'}`}>Shop feature 1</p>
+              </NavLink>
+            </li>
+            <li className='w-full'>
+              <NavLink
+                to={'/sasd'}
+                className={({ isActive }) =>
+                  `flex flex-row w-full py-3 duration-200 rounded-lg items-enter gap-x-4 hover:bg-gray-200 ${
+                    isCollapsed ? 'justify-center px-2 w-9 h-9' : 'px-4'
+                  } ${isActive ? 'text-blue-500' : 'text-gray-600'}`
+                }
+              >
+                <AiOutlineUser className={`${isCollapsed ? 'w-4 h-4' : 'w-5 h-5'}`} />
+                <p className={`text-sm opacity-100 ${isCollapsed && 'hidden opacity-0'}`}>Shop feature 2</p>
+              </NavLink>
+            </li>
+          </>
+        )}
         <li className='w-full'>
-          <NavLink
-            to={'/'}
-            className={({ isActive }) =>
-              `flex flex-row w-full py-3 duration-200 rounded-lg items-enter gap-x-4 hover:bg-gray-200 ${
-                isCollapsed ? 'justify-center px-2 w-9 h-9' : 'px-4'
-              } ${isActive ? 'text-blue-500' : 'text-gray-600'}`
-            }
+          <button
+            className={`flex flex-row w-full py-3 duration-200 rounded-lg items-enter gap-x-4 hover:bg-gray-200 ${
+              isCollapsed ? 'justify-center px-2 w-9 h-9' : 'px-4'
+            } text-gray-600`}
+            onClick={handleSignOut}
           >
-            <LuStore className={`${isCollapsed ? 'w-4 h-4' : 'w-5 h-5'}`} />
-            <p className={`text-sm opacity-100 ${isCollapsed && 'hidden opacity-0'}`}>Store management</p>
-          </NavLink>
-        </li>
-        <li className='w-full'>
-          <NavLink
-            to={'/customers'}
-            className={({ isActive }) =>
-              `flex flex-row w-full py-3 duration-200 rounded-lg items-enter gap-x-4 hover:bg-gray-200 ${
-                isCollapsed ? 'justify-center px-2 w-9 h-9' : 'px-4'
-              } ${isActive ? 'text-blue-500' : 'text-gray-600'}`
-            }
-          >
-            <AiOutlineUser className={`${isCollapsed ? 'w-4 h-4' : 'w-5 h-5'}`} />
-            <p className={`text-sm opacity-100 ${isCollapsed && 'hidden opacity-0'}`}>Customer management</p>
-          </NavLink>
+            <AiOutlineLogout className={`${isCollapsed ? 'w-4 h-4' : 'w-5 h-5'}`} />
+            <p className={`text-sm opacity-100 ${isCollapsed && 'hidden opacity-0'}`}>Sign out</p>
+          </button>
         </li>
       </ul>
       <div
@@ -67,6 +129,6 @@ function Sidebar() {
       </div>
     </aside>
   );
-}
+};
 
 export { Sidebar };
