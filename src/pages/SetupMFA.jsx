@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { setupMFA } from '../api/http';
-import { useLocalStorage } from '../utils/utils';
-import { keyStorage } from '../constraint/constraint';
+import { getSession } from '../utils/utils';
 import { toast } from 'react-toastify';
 import { ConfirmMFA } from '../components';
 
 const SetupMFA = () => {
-  const [user] = useLocalStorage(keyStorage);
+  const session = getSession();
   const [data, setData] = useState({ img: '', key: '' });
   const [isConfirm, setIsConfirm] = useState(false);
 
@@ -15,7 +14,7 @@ const SetupMFA = () => {
   }, []);
 
   const fetchData = async () => {
-    const response = await setupMFA(user.accessToken);
+    const response = await setupMFA(session.accessToken);
 
     if (response.type === 'error') {
       toast(response.data, {

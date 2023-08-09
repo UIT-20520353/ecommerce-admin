@@ -2,8 +2,7 @@ import { useForm } from 'react-hook-form';
 import { ModalPortal } from './ModalPortal';
 import PropTypes from 'prop-types';
 import { confirmMFACode } from '../api/http';
-import { useLocalStorage } from '../utils/utils';
-import { keyStorage } from '../constraint/constraint';
+import { getSession, setSession } from '../utils/utils';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,11 +12,11 @@ const ConfirmMFA = ({ handleClose }) => {
     handleSubmit,
     formState: { errors }
   } = useForm();
-  const [user, setUser] = useLocalStorage(keyStorage, null);
+  const session = getSession();
   const navigate = useNavigate();
 
   const onSubmit = async (data) => {
-    const response = await confirmMFACode(data.code, user.accessToken);
+    const response = await confirmMFACode(data.code, session.accessToken);
 
     if (response.type === 'error') {
       toast(response.data, {
@@ -26,7 +25,7 @@ const ConfirmMFA = ({ handleClose }) => {
         autoClose: 5000
       });
     } else {
-      setUser(null);
+      setSession(null);
       toast('Setup MFA successfully!', {
         position: toast.POSITION.TOP_RIGHT,
         type: 'success',

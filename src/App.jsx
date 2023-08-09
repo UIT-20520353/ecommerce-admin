@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import { Header, Sidebar } from './components';
 
-function App() {
+const App = () => {
   return (
     <div className=''>
       <Header />
@@ -9,6 +9,6 @@ function App() {
       <Outlet />
     </div>
   );
-}
+};
 
 export default App;

@@ -6,8 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { collapse, expand } from '../app/toggleSidebarSlice';
 import { NavLink, useNavigate } from 'react-router-dom';
 import jwtDecode from 'jwt-decode';
-import { useLocalStorage } from '../utils/utils';
-import { keyStorage } from '../constraint/constraint';
+import { getSession, setSession } from '../utils/utils';
 import { useMemo } from 'react';
 import { logout } from '../api/http';
 
@@ -15,16 +14,16 @@ const Sidebar = () => {
   const isCollapsed = useSelector((state) => state.sidebar.isCollapsed);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [user, setUser] = useLocalStorage(keyStorage, null);
+  const session = getSession();
 
   const role = useMemo(() => {
-    const temp = jwtDecode(user?.accessToken);
+    const temp = jwtDecode(session?.accessToken);
     return temp?.authorities[0];
-  }, [user?.accessToken]);
+  }, [session?.accessToken]);
 
   const handleSignOut = async () => {
-    await logout(user?.accessToken);
-    setUser(null);
+    await logout(session?.accessToken);
+    setSession(null);
     navigate('/login', { replace: true });
   };
 

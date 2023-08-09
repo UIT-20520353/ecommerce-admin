@@ -3,7 +3,7 @@ import { FiBell } from 'react-icons/fi';
 import { MdOutlineApps } from 'react-icons/md';
 import { AiOutlineSearch } from 'react-icons/ai';
 
-function Header() {
+const Header = () => {
   return (
     <header
       className={
@@ -47,6 +47,6 @@ function Header() {
       </ul>
     </header>
   );
-}
+};
 
 export { Header };

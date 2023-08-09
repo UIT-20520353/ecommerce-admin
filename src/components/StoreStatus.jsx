@@ -13,37 +13,34 @@ StoreStatus.defaultProps = {
 };
 
 function StoreStatus({ status }) {
-  const styles = useMemo(() => {
+  const getStatus = useMemo(() => {
     switch (status) {
-      case 'active':
-        return 'text-green-700 bg-green-200';
-      case 'deleted':
-        return 'text-red-700 bg-red-200';
-      case 'inactive':
-        return 'text-yellow-700 bg-yellow-100';
+      case 'ACTIVE':
+        return { styles: 'text-green-700 bg-green-200', icon: <TiTick className='w-4 h-4' />, text: 'Active' };
+      case 'DELETED':
+        return {
+          styles: 'text-red-700 bg-red-200',
+          icon: <IoMdClose className='w-4 h-4' />,
+          text: 'Deleted'
+        };
+      case 'INACTIVE':
+        return {
+          styles: 'text-yellow-700 bg-yellow-100',
+          icon: <AiOutlineExclamationCircle className='w-4 h-4' />,
+          text: 'Inactived'
+        };
       default:
         return '';
     }
   }, [status]);
 
   return (
-    <span className={`inline-flex flex-row items-center px-3 py-1 font-semibold rounded-full gap-x-1 ${styles}`}>
-      {status === 'active' ? (
-        <>
-          Active
-          <TiTick className='w-4 h-4' />
-        </>
-      ) : status === 'deleted' ? (
-        <>
-          Deleted
-          <IoMdClose className='w-4 h-4' />
-        </>
-      ) : (
-        <>
-          Inactive
-          <AiOutlineExclamationCircle className='w-4 h-4' />
-        </>
-      )}
+    <span
+      className={`inline-flex flex-row items-center px-3 py-1 font-semibold rounded-full gap-x-1 ${getStatus.styles}`}
+    >
+      <>
+        {getStatus.text} {getStatus.icon}
+      </>
     </span>
   );
 }

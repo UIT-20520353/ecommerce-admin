@@ -1,44 +1,148 @@
-import { FaFileExport, FaSort } from 'react-icons/fa';
+import { FaFileExport, FaSort, FaTrash } from 'react-icons/fa';
+import { TiMinus, TiTick } from 'react-icons/ti';
 import { SortIcon, StoreStatus } from '../components';
-import { stores as data, itemsPerPage } from '../constraint/stores';
-import { useMemo, useState } from 'react';
-import { MdOutlineNavigateBefore, MdOutlineNavigateNext } from 'react-icons/md';
+import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { bulkDeleteShops, deleteShopById, getAllShops, getShops } from '../api/http';
+import { getSession } from '../utils/utils';
+import { shopsPerPage } from '../constraint/constraint';
+import { Pagination } from '../components/Pagination';
+import { toast } from 'react-toastify';
+import { useForm } from 'react-hook-form';
 
 function Stores() {
   const isCollapsed = useSelector((state) => state.sidebar.isCollapsed);
+  const session = getSession();
+  const { register, handleSubmit } = useForm();
   const [currentPage, setCurrentPage] = useState(1);
-  const [stores, setStores] = useState([...data]);
-  const [headerSort, setHeaderSort] = useState({ property: '', type: '' });
+  const [stores, setStores] = useState([]);
+  const [totalShop, setTotalShop] = useState(0);
+  const [headerSort, setHeaderSort] = useState({ property: 'id', type: 'asc' });
+  const [searchValue, setSearchValue] = useState('');
+  const [headerSelect, setHeaderSelect] = useState('none');
+  const [selectedStores, setSelectedStores] = useState([]);
+
+  useEffect(() => {
+    fetchData();
+  }, [currentPage, searchValue, headerSort]);
+
+  useEffect(() => {
+    if (selectedStores.length > 0 && selectedStores.length < totalShop) setHeaderSelect('minus');
+    else if (selectedStores.length === totalShop) setHeaderSelect('tick');
+    else if (selectedStores.length === 0) setHeaderSelect('none');
+  }, [selectedStores.length, totalShop]);
+
+  const fetchData = async () => {
+    const session = getSession();
+
+    const response = await getShops(
+      session?.accessToken,
+      currentPage - 1,
+      shopsPerPage,
+      searchValue,
+      headerSort.property,
+      headerSort.type
+    );
+
+    setStores(response.data);
+    setTotalShop(response.totalCount);
+  };
 
   const pages = useMemo(() => {
-    return Math.ceil(stores.length / itemsPerPage);
-  }, [stores.length]);
+    return Math.ceil(totalShop / shopsPerPage);
+  }, [totalShop]);
 
-  const pageList = useMemo(() => {
-    const result = [];
-
-    for (let i = currentPage - 2; i <= currentPage + 2; i++) if (i >= 1 && i <= pages) result.push(i);
-
-    return result;
-  }, [currentPage, pages]);
-
-  function sortStores(property, type) {
-    const temp = [...stores];
-    if (type === 'asc') temp.sort((a, b) => (a[property] > b[property] ? 1 : b[property] > a[property] ? -1 : 0));
-    else temp.sort((a, b) => (a[property] < b[property] ? 1 : b[property] < a[property] ? -1 : 0));
-
+  const sortStores = (property, type) => {
     setHeaderSort({
       property,
       type
     });
-    setStores(temp);
-  }
+  };
+
+  const handleChangePage = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleDeleteItem = (id) => {
+    deleteShopById(session.accessToken, id).then((response) => {
+      if (response) {
+        toast('Xóa shop thành công!', {
+          type: 'success',
+          position: toast.POSITION.TOP_RIGHT,
+          autoClose: 3000
+        });
+
+        fetchData();
+      } else {
+        toast('Xảy ra lỗi khi xóa shop!', {
+          type: 'error',
+          position: toast.POSITION.TOP_RIGHT,
+          autoClose: 5000
+        });
+      }
+    });
+  };
+
+  const onSubmit = (data) => {
+    setSearchValue(data.text);
+    setCurrentPage(1);
+  };
+
+  const handleHeaderCheckboxClick = () => {
+    if (headerSelect === 'tick' || headerSelect === 'minus') {
+      setHeaderSelect('none');
+      setSelectedStores([]);
+      return;
+    }
+
+    getAllShops(session?.accessToken)
+      .then((data) => {
+        const temp = [];
+        data.forEach((store) => {
+          temp.push(store.id);
+        });
+        setHeaderSelect('tick');
+        setSelectedStores(temp);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  const handleItemCheckboxClick = (id) => {
+    if (selectedStores.includes(id)) {
+      const temp = selectedStores.filter((store) => store !== id);
+      setSelectedStores(temp);
+    } else {
+      const temp = [...selectedStores];
+      temp.push(id);
+      setSelectedStores(temp);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    const response = await bulkDeleteShops(session?.accessToken, selectedStores);
+    if (response) {
+      toast('Xóa shop thành công!', {
+        type: 'success',
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 3000
+      });
+
+      fetchData();
+    } else {
+      toast('Xảy ra lỗi khi xóa shop!', {
+        type: 'error',
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 5000
+      });
+    }
+  };
 
   return (
     <main className={`w-30 mt-16 duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
       <h1 className='mx-12 mt-24 mb-8 text-2xl font-bold'>Stores</h1>
-      <form className='flex flex-row items-center justify-between mx-12'>
+      <form onSubmit={handleSubmit(onSubmit)} className='flex flex-row items-center justify-between mx-12'>
         <div className='relative w-1/4'>
           <div className='absolute inset-y-0 flex items-center pl-3 pointer-events-none left-2'>
             <svg
@@ -62,17 +166,41 @@ function Stores() {
             id='search-stores'
             className='block w-full p-3 pl-12 text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer focus:outline-blue-200 focus:outline-1 bg-gray-50 focus:outline-offset-1'
             placeholder='Search stores'
+            autoComplete='off'
+            {...register('text')}
           />
         </div>
-        <button type='button' className='flex flex-row items-center gap-x-2 group'>
-          <FaFileExport className='w-4 h-4' />
-          <span className='text-sm font-medium group-hover:underline'>Export</span>
-        </button>
+        <div className='flex flex-row items-center gap-x-4'>
+          <button
+            type='button'
+            className={`px-4 py-2 text-sm text-white duration-200 flex flex-row items-center gap-x-2 bg-red-600 rounded-md shadow-md hover:bg-red-700 ${
+              selectedStores.length === 0 ? 'hidden' : 'flex'
+            }`}
+            onClick={handleBulkDelete}
+          >
+            <FaTrash />
+            Delete Selected Items
+          </button>
+          <button type='button' className='flex flex-row items-center gap-x-2 group'>
+            <FaFileExport className='w-4 h-4' />
+            <span className='text-sm font-medium group-hover:underline'>Export</span>
+          </button>
+        </div>
       </form>
       <div className='px-10 overflow-x-auto bg-white border-t border-b my-7'>
         <table className='w-full bg-white '>
           <thead className='text-sm font-medium text-left uppercase border-b '>
             <tr>
+              <th onClick={handleHeaderCheckboxClick}>
+                <div
+                  className={`w-[13px] h-[13px] border border-gray-500 rounded-sm cursor-pointer flex items-center justify-center ${
+                    headerSelect === 'none' ? 'bg-white' : 'bg-blue-500'
+                  }`}
+                >
+                  <TiTick className={`w-full h-full text-white ${headerSelect === 'tick' ? 'block' : 'hidden'}`} />
+                  <TiMinus className={`w-full h-full text-white ${headerSelect === 'minus' ? 'block' : 'hidden'}`} />
+                </div>
+              </th>
               <th
                 scope='col'
                 className='w-32 px-4 py-3 cursor-pointer'
@@ -118,21 +246,22 @@ function Stores() {
               </th>
               <th
                 scope='col'
-                className='w-32 px-4 py-3 cursor-pointer'
-                onClick={() => {
-                  if (headerSort.property === 'totalProducts' && headerSort.type === 'desc')
-                    sortStores('totalProducts', 'asc');
-                  else sortStores('totalProducts', 'desc');
-                }}
+                className='w-32 px-4 py-3'
+                // onClick={() => {
+                //   if (headerSort.property === 'totalProducts' && headerSort.type === 'desc')
+                //     sortStores('totalProducts', 'asc');
+                //   else sortStores('totalProducts', 'desc');
+                // }}
               >
-                <div className='flex flex-row items-center gap-x-1'>
+                {/* <div className='flex flex-row items-center gap-x-1'>
                   Total Products
                   {headerSort.property !== 'totalProducts' ? (
                     <FaSort className='w-3 h-3 text-gray-400' />
                   ) : (
                     <SortIcon type={headerSort.type} />
                   )}
-                </div>
+                </div> */}
+                Total Products
               </th>
               <th
                 scope='col'
@@ -157,74 +286,53 @@ function Stores() {
             </tr>
           </thead>
           <tbody className='text-sm text-left text-gray-500'>
-            {stores.map((store, index) => {
-              if (index >= currentPage * itemsPerPage - itemsPerPage && index <= currentPage * itemsPerPage)
-                return (
-                  <tr key={`store-${store.id}`} className='border-b'>
-                    <td className='w-32 px-4 py-3 font-semibold text-blue-500 cursor-pointer hover:underline'>
-                      #{store.id}
-                    </td>
-                    <td className='w-32 px-4 py-3'>
-                      <div>
-                        <img src={store.logo} className='object-cover object-center w-10 h-10 rounded-full' />
-                      </div>
-                    </td>
-                    <td className='px-4 py-3 font-semibold text-black'>{store.name}</td>
-                    <td className='px-4 py-3'>{store.email}</td>
-                    <td className='w-40 px-4 py-3'>{store.phone}</td>
-                    <td className='w-32 px-4 py-3 font-semibold text-black'>{store.totalProducts}</td>
-                    <td className='w-40 px-4 py-3 text-xs uppercase'>
-                      <StoreStatus status={store.status} />
-                    </td>
-                    <td className='w-32 px-4 py-3'>
-                      <button className='font-medium text-red-600 hover:underline'>Delete</button>
-                    </td>
-                  </tr>
-                );
-              else return;
-            })}
+            {stores.map((store) => (
+              <tr key={`store-${store.id}`} className='border-b'>
+                <td className=''>
+                  <div>
+                    <input
+                      checked={selectedStores.includes(store.id)}
+                      onChange={() => handleItemCheckboxClick(store.id)}
+                      id={`checkbox-store-${store.id}`}
+                      className='cursor-pointer'
+                      type='checkbox'
+                    />
+                  </div>
+                </td>
+                <td className='w-32 px-4 py-3 font-semibold text-blue-500'>#{store.id}</td>
+                <td className='w-32 px-4 py-3'>
+                  <div>
+                    <img src={store.logoUrl} className='object-cover object-center w-10 h-10 rounded-full' />
+                  </div>
+                </td>
+                <td className='px-4 py-3 font-semibold text-black'>{store.name}</td>
+                <td className='px-4 py-3'>{store.email}</td>
+                <td className='w-40 px-4 py-3'>{store.phone}</td>
+                <td className='w-32 px-4 py-3 font-semibold text-black'>{store.totalProducts}</td>
+                <td className='w-40 px-4 py-3 text-xs uppercase'>
+                  <StoreStatus status={store.status} />
+                </td>
+                <td className='w-32 px-4 py-3'>
+                  {store.status !== 'DELETED' && (
+                    <button
+                      className='font-medium text-red-600 hover:underline'
+                      onClick={() => handleDeleteItem(store.id)}
+                    >
+                      Delete
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
-        <nav className={'py-3 text-sm flex flex-row items-center justify-between'}>
-          <p className='text-black'>
-            {currentPage * itemsPerPage - itemsPerPage + 1} to{' '}
-            {itemsPerPage * currentPage <= stores.length ? itemsPerPage * currentPage : stores.length}
-            <span className='text-gray-500'> Items of </span>
-            {stores.length}
-          </p>
-          <div className='flex flex-row items-center'>
-            <button
-              disabled={currentPage === 1}
-              className='flex items-center justify-center text-xs font-medium text-gray-700 rounded-md w-7 h-7'
-              onClick={() => setCurrentPage(currentPage - 1)}
-            >
-              <MdOutlineNavigateBefore className={`w-5 h-5 ${currentPage === 1 && 'text-gray-300'}`} />
-            </button>
-            <ul className='flex flex-row items-center'>
-              {pageList.map((page) => {
-                return (
-                  <li key={`page-${page}`}>
-                    <button
-                      className={`flex items-center justify-center text-xs font-medium rounded-md w-7 h-7 ${
-                        currentPage === page ? 'bg-[#3874ff] text-white shadow-md' : 'text-gray-700'
-                      }`}
-                      onClick={() => setCurrentPage(page)}
-                    >
-                      {page}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-            <button
-              disabled={currentPage === pages}
-              className='flex items-center justify-center text-xs font-medium text-gray-700 rounded-md w-7 h-7'
-              onClick={() => setCurrentPage(currentPage + 1)}
-            >
-              <MdOutlineNavigateNext className={`w-5 h-5 ${currentPage === pages && 'text-gray-300'}`} />
-            </button>
-          </div>
-        </nav>
+        <Pagination
+          currentPage={currentPage}
+          itemPerPage={shopsPerPage}
+          totalItems={totalShop}
+          pages={pages}
+          handleChangePage={handleChangePage}
+        />
       </div>
     </main>
   );

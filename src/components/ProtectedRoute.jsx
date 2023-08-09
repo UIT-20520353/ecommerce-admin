@@ -1,5 +1,4 @@
-import { useLocalStorage } from '../utils/utils';
-import { keyStorage } from '../constraint/constraint';
+import { getSession } from '../utils/utils';
 import { Navigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
@@ -8,9 +7,9 @@ ProtectedRoute.propTypes = {
 };
 
 function ProtectedRoute({ children }) {
-  const [user] = useLocalStorage(keyStorage, null);
+  const session = getSession();
 
-  if (!user) return <Navigate to={'/login'} replace />;
+  if (!session) return <Navigate to={'/login'} replace />;
 
   return children;
 }

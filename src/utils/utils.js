@@ -1,27 +1,24 @@
-import { useState } from 'react';
+import { KEY_STORAGE } from '../constraint/constraint';
 
-export const useLocalStorage = (keyName, defaultValue) => {
-  const [storedValue, setStoredValue] = useState(() => {
-    try {
-      const value = window.localStorage.getItem(keyName);
-      if (value) {
-        return JSON.parse(value);
-      } else {
-        window.localStorage.setItem(keyName, JSON.stringify(defaultValue));
-        return defaultValue;
-      }
-    } catch (err) {
-      console.error('useLocalStorage: ', err);
-      return defaultValue;
+export const getSession = () => {
+  try {
+    const value = window.sessionStorage.getItem(KEY_STORAGE);
+    if (value) {
+      return JSON.parse(value);
+    } else {
+      window.sessionStorage.setItem(KEY_STORAGE, JSON.stringify(null));
+      return null;
     }
-  });
-  const setValue = (newValue) => {
-    try {
-      window.localStorage.setItem(keyName, JSON.stringify(newValue));
-    } catch (err) {
-      console.error('useLocalStorage: ', err);
-    }
-    setStoredValue(newValue);
-  };
-  return [storedValue, setValue];
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
+};
+
+export const setSession = (value) => {
+  try {
+    window.sessionStorage.setItem(KEY_STORAGE, JSON.stringify(value));
+  } catch (error) {
+    console.error('setSession: ', error);
+  }
 };

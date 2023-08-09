@@ -1,1 +1,2 @@
-export const keyStorage = 'login-token';
+export const KEY_STORAGE = 'login-token';
+export const shopsPerPage = 10;

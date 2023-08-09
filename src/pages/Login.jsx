@@ -4,25 +4,23 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { login } from '../api/http';
 import { toast } from 'react-toastify';
-import { useLocalStorage } from '../utils/utils';
-import { keyStorage } from '../constraint/constraint';
+import { setSession } from '../utils/utils';
 import { Notification } from '../components';
 import { useState } from 'react';
 
-function Login() {
+const Login = () => {
   const {
     register,
     handleSubmit,
     formState: { errors }
   } = useForm();
-  const [, setUser] = useLocalStorage(keyStorage, null);
   const [showNotification, setShowNotification] = useState(false);
   const navigate = useNavigate();
 
   const onSubmit = async (data) => {
     const response = await login(data.email, data.password, data.code);
     if (response.type === 'success') {
-      setUser(response.data);
+      setSession(response.data);
       navigate('/', { replace: true });
 
       toast('Đăng nhập thành công', {
@@ -36,7 +34,7 @@ function Login() {
         type: 'error'
       });
     } else {
-      setUser(response.data);
+      setSession(response.data);
       setShowNotification(true);
     }
   };
@@ -121,6 +119,6 @@ function Login() {
       {showNotification && <Notification />}
     </div>
   );
-}
+};
 
 export default Login;
