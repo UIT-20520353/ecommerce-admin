@@ -4,7 +4,6 @@ import { SortIcon, StoreStatus } from '../components';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { bulkDeleteShops, deleteShopById, getAllShops, getShops } from '../api/http';
-import { getSession } from '../utils/utils';
 import { shopsPerPage } from '../constraint/constraint';
 import { Pagination } from '../components/Pagination';
 import { toast } from 'react-toastify';
@@ -12,7 +11,6 @@ import { useForm } from 'react-hook-form';
 
 function Stores() {
   const isCollapsed = useSelector((state) => state.sidebar.isCollapsed);
-  const session = getSession();
   const { register, handleSubmit } = useForm();
   const [currentPage, setCurrentPage] = useState(1);
   const [stores, setStores] = useState([]);
@@ -33,16 +31,7 @@ function Stores() {
   }, [selectedStores.length, totalShop]);
 
   const fetchData = async () => {
-    const session = getSession();
-
-    const response = await getShops(
-      session?.accessToken,
-      currentPage - 1,
-      shopsPerPage,
-      searchValue,
-      headerSort.property,
-      headerSort.type
-    );
+    const response = await getShops(currentPage - 1, shopsPerPage, searchValue, headerSort.property, headerSort.type);
 
     setStores(response.data);
     setTotalShop(response.totalCount);
@@ -64,7 +53,7 @@ function Stores() {
   };
 
   const handleDeleteItem = (id) => {
-    deleteShopById(session.accessToken, id).then((response) => {
+    deleteShopById(id).then((response) => {
       if (response) {
         toast('Xóa shop thành công!', {
           type: 'success',
@@ -95,10 +84,10 @@ function Stores() {
       return;
     }
 
-    getAllShops(session?.accessToken)
-      .then((data) => {
+    getAllShops()
+      .then((response) => {
         const temp = [];
-        data.forEach((store) => {
+        response.data.forEach((store) => {
           temp.push(store.id);
         });
         setHeaderSelect('tick');
@@ -121,7 +110,7 @@ function Stores() {
   };
 
   const handleBulkDelete = async () => {
-    const response = await bulkDeleteShops(session?.accessToken, selectedStores);
+    const response = await bulkDeleteShops(selectedStores);
     if (response) {
       toast('Xóa shop thành công!', {
         type: 'success',

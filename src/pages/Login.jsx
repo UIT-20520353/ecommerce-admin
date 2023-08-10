@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { login } from '../api/http';
 import { toast } from 'react-toastify';
 import { setSession } from '../utils/utils';
-import { Notification } from '../components';
+import { InputField, Notification } from '../components';
 import { useState } from 'react';
 
 const Login = () => {
@@ -19,25 +19,57 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     const response = await login(data.email, data.password, data.code);
-    if (response.type === 'success') {
-      setSession(response.data);
-      navigate('/', { replace: true });
 
-      toast('Đăng nhập thành công', {
-        position: 'top-right',
-        type: 'success'
-      });
-    } else if (response.type === 'error') {
+    if (response.OK) {
+      if (response.data.mfaAuthenticated) {
+        setSession(response.data);
+        navigate('/', { replace: true });
+
+        toast('Đăng nhập thành công', {
+          position: 'top-right',
+          type: 'success'
+        });
+      } else {
+        setSession(response.data);
+        setShowNotification(true);
+      }
+    } else {
       toast(response.data, {
         position: 'top-right',
         autoClose: 5000,
         type: 'error'
       });
-    } else {
-      setSession(response.data);
-      setShowNotification(true);
     }
   };
+
+  const inputFields = [
+    {
+      id: 'email',
+      labelText: 'Email address',
+      errors: errors['email'],
+      placeholder: 'name@example.com',
+      icon: <BiSolidUser />,
+      register: { ...register('email', { required: 'Email is required' }) }
+    },
+    {
+      id: 'password',
+      labelText: 'Password',
+      type: 'password',
+      errors: errors['password'],
+      placeholder: 'Password',
+      icon: <BiSolidKey />,
+      register: register('password', { required: 'Password is required' })
+    },
+    {
+      id: 'mfa-code',
+      labelText: 'MFA Code',
+      errors: errors['code'],
+      placeholder: 'Enter the 6-digit MFA Code',
+      icon: <MdApps />,
+      register: register('code'),
+      autoComplete: 'off'
+    }
+  ];
 
   return (
     <div className='flex flex-col items-center justify-center min-h-screen bg-gray-100'>
@@ -47,62 +79,9 @@ const Login = () => {
         <p className='text-base font-normal text-gray-500'>Get access to your account</p>
       </div>
       <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col items-center w-full mt-4'>
-        <div className='w-1/4 mb-6'>
-          <label htmlFor='email' className='block mb-2 ml-4 text-xs font-medium text-gray-900 uppercase'>
-            Email address
-          </label>
-          <div className='relative'>
-            <div className='absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none'>
-              <BiSolidUser />
-            </div>
-            <input
-              type='text'
-              id='email'
-              className='bg-white border border-gray-300 text-gray-900 text-sm rounded-lg block w-full pl-10 p-2.5'
-              placeholder='name@example.com'
-              {...register('email', { required: 'Email is required' })}
-            />
-            {errors.email && <span className='absolute text-xs text-red-500'>{errors.email.message}</span>}
-          </div>
-        </div>
-        <div className='w-1/4 mb-6'>
-          <label htmlFor='password' className='block mb-2 ml-4 text-xs font-medium text-gray-900 uppercase'>
-            Password
-          </label>
-          <div className='relative'>
-            <div className='absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none'>
-              <BiSolidKey />
-            </div>
-            <input
-              type='password'
-              id='password'
-              className='bg-white border border-gray-300 text-gray-900 text-sm rounded-lg block w-full pl-10 p-2.5'
-              placeholder='Password'
-              autoComplete='off'
-              {...register('password', { required: 'Password is required' })}
-            />
-            {errors.password && <span className='absolute text-xs text-red-500'>{errors.password.message}</span>}
-          </div>
-        </div>
-        <div className='w-1/4 mb-5'>
-          <label htmlFor='mfa-code' className='block mb-2 ml-4 text-xs font-medium text-gray-900 uppercase'>
-            MFA Code
-          </label>
-          <div className='relative'>
-            <div className='absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none'>
-              <MdApps />
-            </div>
-            <input
-              type='text'
-              id='mfa-code'
-              className='bg-white border border-gray-300 text-gray-900 text-sm rounded-lg block w-full pl-10 p-2.5'
-              placeholder='Enter the 6-digit MFA Code'
-              autoComplete='off'
-              {...register('code')}
-            />
-            {errors.code && <span className='absolute text-xs text-red-500'>{errors.code.message}</span>}
-          </div>
-        </div>
+        {inputFields.map((inputField) => (
+          <InputField key={`input-field-${inputField.id}`} {...inputField} />
+        ))}
         <div className='flex flex-col items-center w-1/4 gap-4 mt-8'>
           <button
             type='submit'

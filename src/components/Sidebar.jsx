@@ -17,12 +17,12 @@ const Sidebar = () => {
   const session = getSession();
 
   const role = useMemo(() => {
-    const temp = jwtDecode(session?.accessToken);
+    const temp = jwtDecode(session?.accessToken || null);
     return temp?.authorities[0];
   }, [session?.accessToken]);
 
   const handleSignOut = async () => {
-    await logout(session?.accessToken);
+    await logout();
     setSession(null);
     navigate('/login', { replace: true });
   };

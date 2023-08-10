@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
 import { setupMFA } from '../api/http';
-import { getSession } from '../utils/utils';
 import { toast } from 'react-toastify';
 import { ConfirmMFA } from '../components';
 
 const SetupMFA = () => {
-  const session = getSession();
   const [data, setData] = useState({ img: '', key: '' });
   const [isConfirm, setIsConfirm] = useState(false);
 
@@ -14,16 +12,16 @@ const SetupMFA = () => {
   }, []);
 
   const fetchData = async () => {
-    const response = await setupMFA(session.accessToken);
+    const response = await setupMFA();
 
-    if (response.type === 'error') {
+    if (response.OK) {
+      setData({ img: response.data.qrCodeURL, key: response.data.secret });
+    } else {
       toast(response.data, {
         position: 'top-right',
         autoClose: 5000,
         type: 'error'
       });
-    } else {
-      setData({ img: response.data.qrCodeURL, key: response.data.secret });
     }
   };
 

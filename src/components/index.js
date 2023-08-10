@@ -6,3 +6,4 @@ export * from './ProtectedRoute';
 export * from './ModalPortal';
 export * from './Notification';
 export * from './ConfirmMFA';
+export * from './InputField';

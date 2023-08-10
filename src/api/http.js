@@ -3,63 +3,25 @@ import { instance } from './instance';
 // USER AND AUTHENTICATION RESOURCE
 
 async function login(email, password, code) {
-  try {
-    const response = await instance.post('login', {
-      email,
-      password,
-      mfaCode: code
-    });
+  const response = await instance.post('login', {
+    email,
+    password,
+    mfaCode: code
+  });
 
-    if (response.data.mfaAuthenticated) return { type: 'success', data: response.data };
-    else {
-      return {
-        type: 'mfa',
-        data: response.data
-      };
-    }
-  } catch (error) {
-    if (error.response?.data?.detail === 'error.validate.user.blocked')
-      return { type: 'error', data: 'Bạn đã đăng nhập không thành công quá 5 lần, vui lòng chờ 30 phút để thử lại' };
-    else if (error.response?.status === 401) return { type: 'error', data: 'Thông tin đăng nhập không chính xác' };
-    else return { type: 'error', data: 'Server error' };
-  }
+  return response;
 }
 
-async function logout(accessToken) {
-  try {
-    await instance.post('users/logout', null, {
-      headers: {
-        'X-User-Access-Token': accessToken
-      }
-    });
-  } catch (error) {
-    console.error(error);
-  }
+async function logout() {
+  return await instance.post('users/logout');
 }
 
 async function registerAccount(data) {
-  try {
-    await instance.post('register', {
-      ...data
-    });
+  const response = await instance.post('register', {
+    ...data
+  });
 
-    return {
-      type: 'success',
-      data: 'Đăng ký tài khoản thành công'
-    };
-  } catch (error) {
-    const detail = error.response.data.detail;
-    if (detail === 'error.validate.user.already-exist')
-      return {
-        type: 'error',
-        data: 'Tài khoản đã được đăng ký'
-      };
-
-    return {
-      type: 'error',
-      data: 'Lỗi server'
-    };
-  }
+  return response;
 }
 
 async function confirmAccount(code) {
@@ -74,103 +36,43 @@ async function confirmAccount(code) {
   }
 }
 
-async function setupMFA(token) {
-  try {
-    const response = await instance.patch('users/mfa/setup', null, {
-      headers: {
-        'X-User-Access-Token': token
-      }
-    });
-
-    return {
-      type: 'success',
-      data: response.data
-    };
-  } catch (error) {
-    return {
-      type: 'error',
-      data: 'An error occurred while performing setup MFA'
-    };
-  }
+async function setupMFA() {
+  const response = await instance.patch('users/mfa/setup');
+  return response;
 }
 
-async function confirmMFACode(code, token) {
-  try {
-    const response = await instance.post(
-      'users/mfa/confirm',
-      {
-        mfaCode: code
-      },
-      {
-        headers: {
-          'X-User-Access-Token': token
-        }
-      }
-    );
+async function confirmMFACode(code) {
+  const response = await instance.post('users/mfa/confirm', {
+    mfaCode: code
+  });
 
-    return {
-      type: 'success',
-      data: response.data
-    };
-  } catch (error) {
-    return {
-      type: 'error',
-      data: 'Invalid code'
-    };
-  }
+  return response;
 }
 
 // SHOP PORTAL RESOURCE
 
-const getShops = async (token, page, limit, search = '', property = 'id', type = 'asc') => {
-  try {
-    const response = await instance.get('shops', {
-      headers: {
-        'X-User-Access-Token': token
-      },
-      params: {
-        size: limit,
-        page,
-        'name.contains': search,
-        sort: `${property},${type}`
-      }
-    });
+const getShops = async (page, limit, search = '', property = 'id', type = 'asc') => {
+  const response = await instance.get('shops', {
+    params: {
+      size: limit,
+      page,
+      'name.contains': search,
+      sort: `${property},${type}`
+    }
+  });
 
-    return {
-      type: 'success',
-      data: response.data,
-      totalCount: +response.headers['x-total-count']
-    };
-  } catch (error) {
-    return {
-      type: 'error',
-      data: [],
-      totalCount: 0
-    };
-  }
+  return response;
 };
 
-const getAllShops = async (token) => {
-  try {
-    const response = await instance.get('shops/all', {
-      headers: {
-        'X-User-Access-Token': token
-      }
-    });
+const getAllShops = async () => {
+  const response = await instance.get('shops/all');
 
-    return response.data;
-  } catch (error) {
-    return Promise.reject(error);
-  }
+  return response;
 };
 
-const deleteShopById = async (token, id) => {
+const deleteShopById = async (id) => {
   try {
-    await instance.delete(`shops/${id}`, {
-      headers: {
-        'X-User-Access-Token': token
-      }
-    });
+    await instance.delete(`shops/${id}`);
     return true;
   } catch (error) {
     console.error(error);
@@ -178,14 +80,11 @@ const deleteShopById = async (token, id) => {
   }
 };
 
-const bulkDeleteShops = async (token, ids) => {
+const bulkDeleteShops = async (ids) => {
   try {
     await instance.delete('shops/bulk', {
       data: {
         ids
-      },
-      headers: {
-        'X-User-Access-Token': token
       }
     });
     return true;

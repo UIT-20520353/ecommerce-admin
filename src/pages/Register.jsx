@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { registerAccount } from '../api/http';
 import { toast } from 'react-toastify';
 import { useState } from 'react';
+import { InputField } from '../components';
 
 const Register = () => {
   const {
@@ -55,13 +56,57 @@ const Register = () => {
       phone: data.phone
     });
 
-    if (response.type === 'success') {
+    if (response.OK) {
       reset();
       setIsSuccess(true);
     } else {
-      toast(response.data, { position: toast.POSITION.TOP_RIGHT, autoClose: 5000, type: response.type });
+      toast(response.data, { position: toast.POSITION.TOP_RIGHT, autoClose: 5000, type: 'error' });
     }
   };
+
+  const inputFields = [
+    {
+      id: 'full-name',
+      labelText: 'Name',
+      errors: errors['name'],
+      placeholder: 'Name',
+      register: register('name', registerOptions.name)
+    },
+    {
+      id: 'email',
+      labelText: 'Email address',
+      errors: errors['email'],
+      placeholder: 'name@example.com',
+      register: register('email', registerOptions.email)
+    },
+    {
+      id: 'phone',
+      labelText: 'Phone',
+      errors: errors['phone'],
+      placeholder: '03918xxxxx',
+      register: register('phone', registerOptions.phone)
+    }
+  ];
+  const passwordFields = [
+    {
+      id: 'password',
+      labelText: 'Password',
+      type: 'password',
+      errors: errors['password'],
+      placeholder: 'Password',
+      width: 'w-full',
+      register: register('password', registerOptions.password)
+    },
+    {
+      id: 'comfirm-password',
+      labelText: 'Confirm Password',
+      type: 'password',
+      errors: errors['confirmPassword'],
+      placeholder: 'Confirm Password',
+      width: 'w-full',
+      register: register('confirmPassword', registerOptions.confirmPassword)
+    }
+  ];
 
   return (
     <>
@@ -78,78 +123,13 @@ const Register = () => {
             <p className='text-base font-normal text-gray-500'>Create your account today</p>
           </div>
           <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col items-center w-full mt-4'>
-            <div className='relative w-1/4 mb-6'>
-              <label htmlFor='full-name' className='block mb-2 ml-5 text-xs font-medium text-gray-900 uppercase'>
-                Name
-              </label>
-              <input
-                type='text'
-                id='full-name'
-                className='bg-white border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 px-5'
-                placeholder='Name'
-                {...register('name', registerOptions.name)}
-              />
-              {errors.name && <span className='absolute text-xs text-red-500 left-4'>{errors.name.message}</span>}
-            </div>
-            <div className='relative w-1/4 mb-6'>
-              <label htmlFor='email' className='block mb-2 ml-5 text-xs font-medium text-gray-900 uppercase'>
-                Email address
-              </label>
-              <input
-                type='text'
-                id='email'
-                className='bg-white border border-gray-300 text-gray-900 text-sm rounded-lg block w-full px-5 p-2.5'
-                placeholder='name@example.com'
-                {...register('email', registerOptions.email)}
-              />
-              {errors.email && <span className='absolute text-xs text-red-500 left-4'>{errors.email.message}</span>}
-            </div>
-            <div className='relative w-1/4 mb-6'>
-              <label htmlFor='phone' className='block mb-2 ml-5 text-xs font-medium text-gray-900 uppercase'>
-                Phone
-              </label>
-              <input
-                id='phone'
-                className='bg-white border border-gray-300 text-gray-900 text-sm rounded-lg block w-full px-5 p-2.5'
-                placeholder='03918xxxxx'
-                {...register('phone', registerOptions.phone)}
-              />
-              {errors.phone && <span className='absolute text-xs text-red-500 left-4'>{errors.phone.message}</span>}
-            </div>
-            <div className='grid w-1/4 grid-cols-2 mb-6 gap-x-4'>
-              <div className='relative'>
-                <label htmlFor='password' className='block mb-2 ml-5 text-xs font-medium text-gray-900 uppercase'>
-                  Password
-                </label>
-                <input
-                  type='password'
-                  id='password'
-                  className='bg-white border border-gray-300 text-gray-900 text-sm rounded-lg block w-full px-5 p-2.5'
-                  placeholder='Password'
-                  {...register('password', registerOptions.password)}
-                />
-                {errors.password && (
-                  <span className='absolute text-xs text-red-500 left-4'>{errors.password.message}</span>
-                )}
-              </div>
-              <div className='relative'>
-                <label
-                  htmlFor='comfirm-password'
-                  className='block mb-2 ml-5 text-xs font-medium text-gray-900 uppercase'
-                >
-                  Confirm Password
-                </label>
-                <input
-                  type='password'
-                  id='comfirm-password'
-                  className='bg-white border border-gray-300 text-gray-900 text-sm rounded-lg block w-full px-5 p-2.5'
-                  placeholder='Confirm Password'
-                  {...register('confirmPassword', registerOptions.confirmPassword)}
-                />
-                {errors.confirmPassword && (
-                  <span className='absolute text-xs text-red-500 left-4'>{errors.confirmPassword.message}</span>
-                )}
-              </div>
+            {inputFields.map((inputField) => (
+              <InputField key={`input-field-${inputField.id}`} {...inputField} />
+            ))}
+            <div className='grid w-1/4 grid-cols-2 mb-4 gap-x-4'>
+              {passwordFields.map((passwordField) => (
+                <InputField key={`input-field-${passwordField.id}`} {...passwordField} />
+              ))}
             </div>
             <div className='flex items-center w-1/4 mb-4'>
               <p className='ml-2 text-sm font-medium text-gray-900'>
