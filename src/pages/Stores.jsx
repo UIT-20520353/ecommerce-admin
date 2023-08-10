@@ -54,7 +54,7 @@ function Stores() {
 
   const handleDeleteItem = (id) => {
     deleteShopById(id).then((response) => {
-      if (response) {
+      if (response.OK) {
         toast('Xóa shop thành công!', {
           type: 'success',
           position: toast.POSITION.TOP_RIGHT,
@@ -111,7 +111,7 @@ function Stores() {
 
   const handleBulkDelete = async () => {
     const response = await bulkDeleteShops(selectedStores);
-    if (response) {
+    if (response.OK) {
       toast('Xóa shop thành công!', {
         type: 'success',
         position: toast.POSITION.TOP_RIGHT,

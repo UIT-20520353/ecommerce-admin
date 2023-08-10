@@ -25,15 +25,11 @@ async function registerAccount(data) {
 }
 
 async function confirmAccount(code) {
-  try {
-    await instance.put('register/confirm', null, {
-      params: {
-        code
-      }
-    });
-  } catch (error) {
-    console.error(error);
-  }
+  return await instance.put('register/confirm', null, {
+    params: {
+      code
+    }
+  });
 }
 
 async function setupMFA() {
@@ -71,26 +67,15 @@ const getAllShops = async () => {
 };
 
 const deleteShopById = async (id) => {
-  try {
-    await instance.delete(`shops/${id}`);
-    return true;
-  } catch (error) {
-    console.error(error);
-    return false;
-  }
+  return await instance.delete(`shops/${id}`);
 };
 
 const bulkDeleteShops = async (ids) => {
-  try {
-    await instance.delete('shops/bulk', {
-      data: {
-        ids
-      }
-    });
-    return true;
-  } catch (error) {
-    return false;
-  }
+  return await instance.delete('shops/bulk', {
+    data: {
+      ids
+    }
+  });
 };
 
 export { login, logout, registerAccount, confirmAccount, setupMFA, confirmMFACode };

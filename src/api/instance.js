@@ -140,8 +140,11 @@ instance.interceptors.response.use(
           OK: false,
           data: null
         };
+      default:
+        return {
+          OK: false,
+          data: null
+        };
     }
-
-    return Promise.reject(error);
   }
 );
