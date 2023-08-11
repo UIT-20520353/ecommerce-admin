@@ -20,9 +20,9 @@ const Login = () => {
   const onSubmit = async (data) => {
     const response = await login(data.email, data.password, data.code);
 
-    if (response.OK) {
-      if (response.data.mfaAuthenticated) {
-        setSession(response.data);
+    if (response.ok) {
+      if (response.body.mfaAuthenticated) {
+        setSession(response.body);
         navigate('/', { replace: true });
 
         toast('Đăng nhập thành công', {
@@ -30,11 +30,11 @@ const Login = () => {
           type: 'success'
         });
       } else {
-        setSession(response.data);
+        setSession(response.body);
         setShowNotification(true);
       }
     } else {
-      toast(response.data, {
+      toast(response.error?.message, {
         position: 'top-right',
         autoClose: 5000,
         type: 'error'

@@ -8,6 +8,17 @@ import { shopsPerPage } from '../constraint/constraint';
 import { Pagination } from '../components/Pagination';
 import { toast } from 'react-toastify';
 import { useForm } from 'react-hook-form';
+import { CSVLink } from 'react-csv';
+
+const headers = [
+  { label: 'Store', key: 'id' },
+  { label: 'Logo', key: 'logoUrl' },
+  { label: 'Name', key: 'name' },
+  { label: 'Email', key: 'email' },
+  { label: 'Phone', key: 'phone' },
+  { label: 'Total products', key: 'totalProducts' },
+  { label: 'Status', key: 'status' }
+];
 
 function Stores() {
   const isCollapsed = useSelector((state) => state.sidebar.isCollapsed);
@@ -19,6 +30,7 @@ function Stores() {
   const [searchValue, setSearchValue] = useState('');
   const [headerSelect, setHeaderSelect] = useState('none');
   const [selectedStores, setSelectedStores] = useState([]);
+  const [storesExport, setStoresExport] = useState([]);
 
   useEffect(() => {
     fetchData();
@@ -33,7 +45,7 @@ function Stores() {
   const fetchData = async () => {
     const response = await getShops(currentPage - 1, shopsPerPage, searchValue, headerSort.property, headerSort.type);
 
-    setStores(response.data);
+    setStores(response.body);
     setTotalShop(response.totalCount);
   };
 
@@ -54,7 +66,7 @@ function Stores() {
 
   const handleDeleteItem = (id) => {
     deleteShopById(id).then((response) => {
-      if (response.OK) {
+      if (response.ok) {
         toast('Xóa shop thành công!', {
           type: 'success',
           position: toast.POSITION.TOP_RIGHT,
@@ -84,18 +96,14 @@ function Stores() {
       return;
     }
 
-    getAllShops()
-      .then((response) => {
-        const temp = [];
-        response.data.forEach((store) => {
-          temp.push(store.id);
-        });
-        setHeaderSelect('tick');
-        setSelectedStores(temp);
-      })
-      .catch((error) => {
-        console.error(error);
+    getAllShops().then((response) => {
+      const temp = [];
+      response.body.forEach((store) => {
+        temp.push(store.id);
       });
+      setHeaderSelect('tick');
+      setSelectedStores(temp);
+    });
   };
 
   const handleItemCheckboxClick = (id) => {
@@ -111,7 +119,7 @@ function Stores() {
 
   const handleBulkDelete = async () => {
     const response = await bulkDeleteShops(selectedStores);
-    if (response.OK) {
+    if (response.ok) {
       toast('Xóa shop thành công!', {
         type: 'success',
         position: toast.POSITION.TOP_RIGHT,
@@ -126,6 +134,21 @@ function Stores() {
         autoClose: 5000
       });
     }
+  };
+
+  const handleExportClick = (done) => {
+    getAllShops().then((response) => {
+      if (response.ok) {
+        setStoresExport(response.body);
+        done();
+      } else {
+        toast('Xảy ra lỗi khi export data!', {
+          type: 'error',
+          position: toast.POSITION.TOP_RIGHT,
+          autoClose: 5000
+        });
+      }
+    });
   };
 
   return (
@@ -170,10 +193,23 @@ function Stores() {
             <FaTrash />
             Delete Selected Items
           </button>
-          <button type='button' className='flex flex-row items-center gap-x-2 group'>
+          <CSVLink
+            data={storesExport}
+            headers={headers}
+            filename={'Stores.csv'}
+            className='flex flex-row items-center gap-x-2 group'
+            asyncOnClick={true}
+            onClick={(event, done) => {
+              handleExportClick(done);
+            }}
+          >
             <FaFileExport className='w-4 h-4' />
             <span className='text-sm font-medium group-hover:underline'>Export</span>
-          </button>
+          </CSVLink>
+          {/* <button type='button' className='flex flex-row items-center gap-x-2 group'>
+            <FaFileExport className='w-4 h-4' />
+            <span className='text-sm font-medium group-hover:underline'>Export</span>
+          </button> */}
         </div>
       </form>
       <div className='px-10 overflow-x-auto bg-white border-t border-b my-7'>

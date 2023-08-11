@@ -14,10 +14,10 @@ const SetupMFA = () => {
   const fetchData = async () => {
     const response = await setupMFA();
 
-    if (response.OK) {
-      setData({ img: response.data.qrCodeURL, key: response.data.secret });
+    if (response.ok) {
+      setData({ img: response.body.qrCodeURL, key: response.body.secret });
     } else {
-      toast(response.data, {
+      toast(response.error.message, {
         position: 'top-right',
         autoClose: 5000,
         type: 'error'

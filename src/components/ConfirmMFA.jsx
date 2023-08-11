@@ -17,7 +17,7 @@ const ConfirmMFA = ({ handleClose }) => {
   const onSubmit = async (data) => {
     const response = await confirmMFACode(data.code);
 
-    if (response.OK) {
+    if (response.ok) {
       setSession(null);
       toast('Setup MFA successfully!', {
         position: toast.POSITION.TOP_RIGHT,
@@ -26,7 +26,7 @@ const ConfirmMFA = ({ handleClose }) => {
       });
       navigate('/login', { replace: true });
     } else {
-      toast(response.data, {
+      toast(response.error.message, {
         position: toast.POSITION.TOP_RIGHT,
         type: 'error',
         autoClose: 5000

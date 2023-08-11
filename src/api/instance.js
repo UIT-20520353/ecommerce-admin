@@ -1,6 +1,12 @@
 import axios from 'axios';
 import { getSession, setSession } from '../utils/utils';
-import { INVALID_CREDENTIAL, USER_ALREADY_EXIST, USER_BLOCKED } from '../constraint/constraint';
+import {
+  ACCESS_DENIED,
+  INVALID_CREDENTIAL,
+  MFA_INVALID,
+  USER_ALREADY_EXIST,
+  USER_BLOCKED
+} from '../constraint/constraint';
 
 export const instance = axios.create({
   baseURL: 'http://localhost:8080/api/portal/'
@@ -8,97 +14,58 @@ export const instance = axios.create({
 
 const refreshAccessToken = async () => {
   const response = await instance.post('refresh-tokens');
-  if (response.OK) setSession(response.data);
-  else setSession(null);
+  if (response.ok) setSession(response.body);
 
   return response;
 };
 
-instance.interceptors.request.use((config) => {
+instance.interceptors.request.use(async (config) => {
   const session = getSession();
-
-  if (config?.url === 'refresh-tokens') {
-    config.headers['x-user-refresh-token'] = session?.refreshToken;
-  } else if (config?.url !== 'login' && config?.url.includes('register') === false) {
-    config.headers['X-User-Access-Token'] = session?.accessToken;
+  switch (config?.url) {
+    case 'login':
+    case 'register/confirm':
+    case 'register':
+      break;
+    case 'refresh-tokens': {
+      config.headers['x-user-refresh-token'] = session?.refreshToken;
+      break;
+    }
+    default: {
+      config.headers['X-User-Access-Token'] = session?.accessToken;
+      break;
+    }
   }
 
   return config;
 });
 
+// suggestions object return
+
+// {
+//   status: number;
+//   ok: boolean;
+//   body?: T;
+//   pagination?: Pagination;
+//   error?: HttpError;
+// }
+
 instance.interceptors.response.use(
   (response) => {
-    const config = response?.config;
+    const { status, data: responseData, headers } = response;
 
-    switch (config.url) {
-      case 'shops':
-        return {
-          OK: true,
-          data: response.data,
-          totalCount: +response.headers['x-total-count']
-        };
-      case 'login':
-        return { OK: true, data: response.data };
-      case 'shops/all':
-        return {
-          OK: true,
-          data: response.data
-        };
-      case 'users/logout':
-        return {
-          OK: true,
-          data: null
-        };
-      case 'register':
-        return {
-          OK: true,
-          data: 'Đăng ký tài khoản thành công'
-        };
-      case 'refresh-tokens':
-        return {
-          OK: true,
-          data: response.data
-        };
-      case 'users/mfa/setup':
-        return {
-          OK: true,
-          data: response.data
-        };
-      case 'users/mfa/confirm':
-        return {
-          OK: true,
-          data: response.data
-        };
-      default:
-        return {
-          OK: true,
-          data: null
-        };
-    }
+    const data = {
+      status,
+      ok: true,
+      body: responseData,
+      ...(headers['x-total-count'] && { totalCount: +headers['x-total-count'] })
+    };
+
+    return data;
   },
   async (error) => {
-    switch (error?.response?.data?.detail) {
-      case INVALID_CREDENTIAL:
-        return {
-          OK: false,
-          data: 'Thông tin đăng nhập không chính xác'
-        };
-      case USER_BLOCKED:
-        return {
-          OK: false,
-          data: 'Bạn đã đăng nhập không thành công quá 5 lần, vui lòng chờ 30 phút để thử lại'
-        };
-      case USER_ALREADY_EXIST:
-        return {
-          OK: false,
-          data: 'Tài khoản đã được đăng ký'
-        };
-    }
+    const { status, headers, config, data: responseData } = error.response;
 
-    const config = error?.config;
-    const temp = getSession();
-
-    if (error?.response?.status === 401 && !config?.sent && temp) {
+    if (headers['x-is-token-expired'] && !config?.sent) {
       config.sent = true;
 
       const result = await refreshAccessToken();
@@ -113,38 +80,39 @@ instance.interceptors.response.use(
       return instance(config);
     }
 
-    switch (config?.url) {
-      case 'users/mfa/setup':
-        return {
-          OK: false,
-          data: 'An error occurred while performing setup MFA'
-        };
-      case 'users/mfa/confirm':
-        return {
-          OK: false,
-          data: 'Invalid code'
-        };
-      case 'shops':
-        return {
-          OK: false,
-          data: [],
-          totalCount: 0
-        };
-      case 'shops/all':
-        return {
-          OK: false,
-          data: []
-        };
-      case 'refresh-tokens':
-        return {
-          OK: false,
-          data: null
-        };
-      default:
-        return {
-          OK: false,
-          data: null
-        };
-    }
+    const response = {
+      ok: false,
+      error: {
+        unauthorized: status === 401,
+        badRequest: status === 400,
+        notFound: status === 404,
+        clientError: status >= 400 && status <= 499,
+        serverError: status >= 500 && status <= 599,
+        message: getMessage(responseData.detail)
+      }
+    };
+
+    return Promise.reject(response);
   }
 );
+
+export const handleAxios = (apiRequest) => {
+  return apiRequest.then((response) => response).catch((response) => response);
+};
+
+const getMessage = (detail) => {
+  switch (detail) {
+    case INVALID_CREDENTIAL:
+      return 'Thông tin đăng nhập không chính xác';
+    case USER_BLOCKED:
+      return 'Bạn đã đăng nhập không thành công quá 5 lần, vui lòng chờ 30 phút để thử lại';
+    case USER_ALREADY_EXIST:
+      return 'Tài khoản đã được đăng ký';
+    case MFA_INVALID:
+      return 'Invalid code';
+    case ACCESS_DENIED:
+      return 'Access Denied';
+    default:
+      return '';
+  }
+};

@@ -56,11 +56,11 @@ const Register = () => {
       phone: data.phone
     });
 
-    if (response.OK) {
+    if (response.ok) {
       reset();
       setIsSuccess(true);
     } else {
-      toast(response.data, { position: toast.POSITION.TOP_RIGHT, autoClose: 5000, type: 'error' });
+      toast(response.error.message, { position: toast.POSITION.TOP_RIGHT, autoClose: 5000, type: 'error' });
     }
   };
 
