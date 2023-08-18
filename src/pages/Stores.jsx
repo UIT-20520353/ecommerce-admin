@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { bulkDeleteShops, deleteShopById, getAllShops, getShops } from '../api/http';
 import { shopsPerPage } from '../constraint/constraint';
-import { Pagination } from '../components/Pagination';
+import { Pagination } from '../components';
 import { toast } from 'react-toastify';
 import { useForm } from 'react-hook-form';
 import { CSVLink } from 'react-csv';
@@ -45,8 +45,8 @@ function Stores() {
   const fetchData = async () => {
     const response = await getShops(currentPage - 1, shopsPerPage, searchValue, headerSort.property, headerSort.type);
 
-    setStores(response.body);
-    setTotalShop(response.totalCount);
+    setStores(response?.body || []);
+    setTotalShop(response?.totalCount || 0);
   };
 
   const pages = useMemo(() => {
@@ -152,7 +152,7 @@ function Stores() {
   };
 
   return (
-    <main className={`w-30 mt-16 duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
+    <main className={`w-30 my-16 duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
       <h1 className='mx-12 mt-24 mb-8 text-2xl font-bold'>Stores</h1>
       <form onSubmit={handleSubmit(onSubmit)} className='flex flex-row items-center justify-between mx-12'>
         <div className='relative w-1/4'>
@@ -213,8 +213,8 @@ function Stores() {
         </div>
       </form>
       <div className='px-10 overflow-x-auto bg-white border-t border-b my-7'>
-        <table className='w-full bg-white '>
-          <thead className='text-sm font-medium text-left uppercase border-b '>
+        <table className='w-full bg-white'>
+          <thead className='text-sm font-medium text-left uppercase border-b'>
             <tr>
               <th onClick={handleHeaderCheckboxClick}>
                 <div

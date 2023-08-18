@@ -1,14 +1,17 @@
 import { CgPushLeft } from 'react-icons/cg';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { LuStore } from 'react-icons/lu';
-import { AiOutlineUser, AiOutlineLogout } from 'react-icons/ai';
+import { AiOutlineUser, AiOutlineLogout, AiOutlineShop, AiOutlineTag } from 'react-icons/ai';
+import { BiCategoryAlt } from 'react-icons/bi';
+import { RiProductHuntLine } from 'react-icons/ri';
 import { useSelector, useDispatch } from 'react-redux';
 import { collapse, expand } from '../app/toggleSidebarSlice';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import jwtDecode from 'jwt-decode';
 import { getSession, setSession } from '../utils/utils';
 import { useMemo } from 'react';
 import { logout } from '../api/http';
+import { MenuItem } from './MenuItem';
 
 const Sidebar = () => {
   const isCollapsed = useSelector((state) => state.sidebar.isCollapsed);
@@ -27,6 +30,48 @@ const Sidebar = () => {
     navigate('/login', { replace: true });
   };
 
+  const ADMIN_MENUS = [
+    {
+      text: 'Store management',
+      icon: <LuStore className={`${isCollapsed ? 'w-4 h-4' : 'w-5 h-5'}`} />,
+      isCollapsed: isCollapsed,
+      url: '/'
+    },
+    {
+      text: 'Customer management',
+      icon: <AiOutlineUser className={`${isCollapsed ? 'w-4 h-4' : 'w-5 h-5'}`} />,
+      isCollapsed: isCollapsed,
+      url: '/customers'
+    }
+  ];
+
+  const SHOP_MENUS = [
+    {
+      text: 'Store detail',
+      icon: <AiOutlineShop className={`${isCollapsed ? 'w-4 h-4' : 'w-5 h-5'}`} />,
+      isCollapsed: isCollapsed,
+      url: '/'
+    },
+    {
+      text: 'Category management',
+      icon: <BiCategoryAlt className={`${isCollapsed ? 'w-4 h-4' : 'w-5 h-5'}`} />,
+      isCollapsed: isCollapsed,
+      url: '/categories'
+    },
+    {
+      text: 'Tag management',
+      icon: <AiOutlineTag className={`${isCollapsed ? 'w-4 h-4' : 'w-5 h-5'}`} />,
+      isCollapsed: isCollapsed,
+      url: '/tags'
+    },
+    {
+      text: 'Product management',
+      icon: <RiProductHuntLine className={`${isCollapsed ? 'w-4 h-4' : 'w-5 h-5'}`} />,
+      isCollapsed: isCollapsed,
+      url: '/products'
+    }
+  ];
+
   return (
     <aside
       className={`fixed border-gray-200 left-0 bg-white border-r top-16 duration-200 ${isCollapsed ? 'w-16' : 'w-64'}`}
@@ -34,61 +79,15 @@ const Sidebar = () => {
       <ul className='flex flex-col items-start px-4 mt-4 gap-y-3 h-sidebar custom-scroll'>
         {role === 'ADMIN' ? (
           <>
-            <li className='w-full'>
-              <NavLink
-                to={'/'}
-                className={({ isActive }) =>
-                  `flex flex-row w-full py-3 duration-200 rounded-lg items-enter gap-x-4 hover:bg-gray-200 ${
-                    isCollapsed ? 'justify-center px-2 w-9 h-9' : 'px-4'
-                  } ${isActive ? 'text-blue-500' : 'text-gray-600'}`
-                }
-              >
-                <LuStore className={`${isCollapsed ? 'w-4 h-4' : 'w-5 h-5'}`} />
-                <p className={`text-sm opacity-100 ${isCollapsed && 'hidden opacity-0'}`}>Store management</p>
-              </NavLink>
-            </li>
-            <li className='w-full'>
-              <NavLink
-                to={'/customers'}
-                className={({ isActive }) =>
-                  `flex flex-row w-full py-3 duration-200 rounded-lg items-enter gap-x-4 hover:bg-gray-200 ${
-                    isCollapsed ? 'justify-center px-2 w-9 h-9' : 'px-4'
-                  } ${isActive ? 'text-blue-500' : 'text-gray-600'}`
-                }
-              >
-                <AiOutlineUser className={`${isCollapsed ? 'w-4 h-4' : 'w-5 h-5'}`} />
-                <p className={`text-sm opacity-100 ${isCollapsed && 'hidden opacity-0'}`}>Customer management</p>
-              </NavLink>
-            </li>
+            {ADMIN_MENUS.map((item) => (
+              <MenuItem key={`Admin-${item.url}`} {...item} />
+            ))}
           </>
         ) : (
           <>
-            <li className='w-full'>
-              <NavLink
-                to={'/sasd'}
-                className={({ isActive }) =>
-                  `flex flex-row w-full py-3 duration-200 rounded-lg items-enter gap-x-4 hover:bg-gray-200 ${
-                    isCollapsed ? 'justify-center px-2 w-9 h-9' : 'px-4'
-                  } ${isActive ? 'text-blue-500' : 'text-gray-600'}`
-                }
-              >
-                <AiOutlineUser className={`${isCollapsed ? 'w-4 h-4' : 'w-5 h-5'}`} />
-                <p className={`text-sm opacity-100 ${isCollapsed && 'hidden opacity-0'}`}>Shop feature 1</p>
-              </NavLink>
-            </li>
-            <li className='w-full'>
-              <NavLink
-                to={'/sasd'}
-                className={({ isActive }) =>
-                  `flex flex-row w-full py-3 duration-200 rounded-lg items-enter gap-x-4 hover:bg-gray-200 ${
-                    isCollapsed ? 'justify-center px-2 w-9 h-9' : 'px-4'
-                  } ${isActive ? 'text-blue-500' : 'text-gray-600'}`
-                }
-              >
-                <AiOutlineUser className={`${isCollapsed ? 'w-4 h-4' : 'w-5 h-5'}`} />
-                <p className={`text-sm opacity-100 ${isCollapsed && 'hidden opacity-0'}`}>Shop feature 2</p>
-              </NavLink>
-            </li>
+            {SHOP_MENUS.map((item) => (
+              <MenuItem key={`Shop-${item.url}`} {...item} />
+            ))}
           </>
         )}
         <li className='w-full'>
