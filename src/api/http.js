@@ -175,6 +175,16 @@ const getAllTags = async () => {
   return handleAxios(instance.get('shops/me/tags/all'));
 };
 
+// TAG PORTAL RESOURCE
+
+const getProducts = async (params) => {
+  return handleAxios(instance.get('shops/me/products', { params }));
+};
+
+const getAllProducts = async () => {
+  return handleAxios(instance.get('shops/me/products/all'));
+};
+
 // EXPORT
 
 export { login, logout, registerAccount, confirmAccount, setupMFA, confirmMFACode };
@@ -182,3 +192,4 @@ export { getShops, deleteShopById, getAllShops, bulkDeleteShops, getShopDetail, 
 export { getCustomers };
 export { getCategories, deleteCategoryById, addNewCategory, bulkDeleteCategories, getAllCategories };
 export { getTags, deleteTagById, addNewTag, bulkDeleteTags, getAllTags };
+export { getProducts, getAllProducts };

@@ -10,3 +10,4 @@ export const customersPerPage = 10;
 export const shopsPerPage = 10;
 export const categoriesPerPage = 10;
 export const tagsPerPage = 10;
+export const productsPerPage = 10;

@@ -10,6 +10,7 @@ import StoreDetail from '../pages/StoreDetail';
 import Categories from '../pages/Categories';
 import Tags from '../pages/Tags';
 import Products from '../pages/Products';
+import AddProduct from '../pages/AddProduct';
 
 const getRole = () => {
   const session = getSession();
@@ -30,6 +31,7 @@ const MainLayout = () => {
         <Route path={'categories'} element={<Categories />} />
         <Route path={'tags'} element={<Tags />} />
         <Route path={'products'} element={<Products />} />
+        <Route path={'add-product'} element={<AddProduct />} />
       </Routes>
     </div>
   );
