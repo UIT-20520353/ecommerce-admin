@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { AiOutlineClose } from 'react-icons/ai';
+import { BiImageAdd } from 'react-icons/bi';
 import { getAllCategories, getAllTags } from '../api/http';
 
 const AddProduct = () => {
@@ -27,7 +28,8 @@ const AddProduct = () => {
 
   const registerOptions = {
     title: { required: 'Title is required' },
-    description: { required: 'Description is required' }
+    description: { required: 'Description is required' },
+    category: { required: 'Please choose category' }
   };
 
   const handleAddTag = () => {
@@ -91,8 +93,61 @@ const AddProduct = () => {
               {...register('description', registerOptions.description)}
             />
           </div>
-          <div className='w-full'>
-            <p className='text-base font-medium'>Display images</p>
+          <div className='w-full mb-6'>
+            <p className='mb-4 text-base font-medium'>Display images</p>
+            <div className='flex flex-col items-center justify-center w-full h-48 border border-gray-400 border-dashed rounded-md cursor-pointer gap-y-3'>
+              <div className='text-base text-gray-500'>
+                <span>Drag your photo here or </span>
+                <button type='button' className='text-sm font-medium text-blue-700 hover:underline'>
+                  Browse from device
+                </button>
+              </div>
+              <BiImageAdd className='w-16 h-16 text-gray-500' />
+            </div>
+          </div>
+          <div className='flex flex-row items-start w-full'>
+            <div className='w-1/2'>
+              <p className='mb-4 text-base font-medium'>Pricing</p>
+              <div className='flex flex-col float-left w-2/5 mr-4 gap-y-2'>
+                <label htmlFor='regularPrice' className='text-xs font-medium'>
+                  Regular price
+                </label>
+                <input
+                  type='text'
+                  id='regularPrice'
+                  name='regularPrice'
+                  placeholder='$$$'
+                  className='bg-white border border-gray-300 text-gray-900 text-xs rounded-lg block w-full p-2.5 px-5'
+                />
+              </div>
+              <div className='flex flex-col w-2/5 gap-y-2'>
+                <label htmlFor='salePrice' className='text-xs font-medium'>
+                  Sale price
+                </label>
+                <input
+                  type='text'
+                  id='salePrice'
+                  name='salePrice'
+                  placeholder='$$$'
+                  className='bg-white border border-gray-300 text-gray-900 text-xs rounded-lg block w-full p-2.5 px-5'
+                />
+              </div>
+            </div>
+            <div className='flex-1'>
+              <p className='mb-4 text-base font-medium'>Restock</p>
+              <div className='flex flex-col float-left w-full mr-4 gap-y-2'>
+                <label htmlFor='stock' className='text-xs font-medium'>
+                  Add to Stock
+                </label>
+                <input
+                  type='number'
+                  id='stock'
+                  name='stock'
+                  placeholder='Quantity'
+                  className='bg-white border border-gray-300 text-gray-900 text-xs rounded-lg block w-full p-2.5 px-5'
+                />
+              </div>
+            </div>
           </div>
         </div>
         <div className='w-[30%] bg-white border rounded-md shadow-sm px-5 py-4'>
